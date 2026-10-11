@@ -1,0 +1,33 @@
+[
+  {
+    "rule_id": "R-LOG-002",
+    "intent": "fake_logistics_complaint",
+    "priority": 10,
+    "conditions": {
+      "any": [
+        {"field": "logistics_record.status", "op": "==", "value": "无轨迹或停滞超3天"},
+        {"field": "carrier_confirmation", "op": "==", "value": "未揽收"},
+        {"field": "buyer_feedback.mismatch", "op": "==", "value": true}
+      ]
+    },
+    "decision": "create_ticket_and_handoff",
+    "action": "创建虚假物流投诉工单，建议转人工",
+    "kb_reference": "KB-LOG-004",
+    "reply_template": "您的物流信息存在异常，已为您创建投诉工单并转接专员核实。根据平台规则，若卖家提供虚假信息将会被处罚。"
+  },
+  {
+    "rule_id": "R-LOG-003",
+    "intent": "force_majeure_exemption",
+    "priority": 5,
+    "conditions": {
+      "all": [
+        {"field": "logistics_event.type", "op": "==", "value": "不可抗力"},
+        {"field": "seller_system_data.status", "op": "==", "value": "已校准"}
+      ]
+    },
+    "decision": "auto_reply_with_exemption",
+    "action": "自动回复并豁免卖家物流时效责任",
+    "kb_reference": "KB-LOG-002",
+    "reply_template": "由于遇到不可抗力因素，您的包裹物流时效可能受到影响。平台已根据实际发货数据校准信息，请您耐心等待。"
+  }
+]

@@ -1,0 +1,184 @@
+[
+  {
+    "rule_id": "R-RET-001",
+    "intent": "check_return_eligibility",
+    "priority": 100,
+    "conditions": {
+      "all": [
+        {"field": "order.status", "op": "==", "value": "未发货"}
+      ]
+    },
+    "decision": "allow_direct_refund",
+    "action": "直接退款，无需退货",
+    "kb_reference": "KB-RET-001",
+    "reply_template": "您的订单尚未发货，可以直接为您办理全额退款。"
+  },
+  {
+    "rule_id": "R-RET-002",
+    "intent": "check_return_eligibility",
+    "priority": 90,
+    "conditions": {
+      "all": [
+        {"field": "order.status", "op": "==", "value": "已签收"},
+        {"field": "days_since_signed", "op": "<=", "value": 7},
+        {"field": "product.category", "op": "not_in", "value": ["定制", "生鲜", "内衣", "贴身用品", "二手", "数字化商品", "报刊", "服务", "人体用药"]},
+        {"field": "product.condition", "op": "==", "value": "完好"}
+      ]
+    },
+    "decision": "allow_return",
+    "action": "创建退货工单",
+    "kb_reference": "KB-RET-001",
+    "reply_template": "您的订单签收在7天内且商品完好，符合七天无理由退货条件。"
+  },
+  {
+    "rule_id": "R-RET-003",
+    "intent": "check_return_eligibility",
+    "priority": 90,
+    "conditions": {
+      "all": [
+        {"field": "order.status", "op": "==", "value": "已签收"},
+        {"field": "days_since_signed", "op": ">", "value": 7}
+      ]
+    },
+    "decision": "reject_return",
+    "action": "拒绝无理由退货",
+    "kb_reference": "KB-RET-001",
+    "reply_template": "非常抱歉，您的订单已签收超过7天，已不在七天无理由退货时效范围内。如商品存在质量问题，可以走质量问题售后。"
+  },
+  {
+    "rule_id": "R-RET-004",
+    "intent": "check_return_eligibility",
+    "priority": 110,
+    "conditions": {
+      "all": [
+        {"field": "product.category", "op": "in", "value": ["定制", "生鲜", "内衣", "贴身用品", "二手", "数字化商品", "报刊", "服务", "人体用药"]}
+      ]
+    },
+    "decision": "reject_special_category",
+    "action": "拒绝无理由退货并解释",
+    "kb_reference": "KB-RET-004",
+    "reply_template": "亲，您购买的商品属于特殊类目（定制/生鲜/贴身用品等），不支持七天无理由退货。如存在质量问题，请提供凭证，我帮您走质量问题售后。"
+  },
+  {
+    "rule_id": "R-RET-005",
+    "intent": "check_return_eligibility",
+    "priority": 120,
+    "conditions": {
+      "all": [
+        {"field": "return_reason", "op": "in", "value": ["质量问题", "破损", "污渍", "与描述不符", "假冒品牌", "缺件"]}
+      ]
+    },
+    "decision": "allow_quality_return",
+    "action": "创建质量问题退货工单",
+    "kb_reference": "KB-DIS-022",
+    "reply_template": "亲，您反馈的是质量问题，不受7天无理由限制。请保留好商品照片/视频作为凭证，我帮您创建质量问题退货工单。"
+  },
+  {
+    "rule_id": "R-RET-006",
+    "intent": "check_return_eligibility",
+    "priority": 85,
+    "conditions": {
+      "all": [
+        {"field": "product.condition", "op": "==", "value": "不完好"}
+      ]
+    },
+    "decision": "reject_not_intact",
+    "action": "拒绝无理由退货",
+    "kb_reference": "KB-RET-005",
+    "reply_template": "亲，退回商品需保持完好（原品质功能、配附件齐全）。当前商品已不完好，可能影响退货，建议您联系人工进一步核实。"
+  },
+ {
+  "rule_id": "R-RET-007",
+  "intent": "calc_return_shipping",
+  "priority": 80,
+  "conditions": {
+    "all": [
+      {"field": "order.status", "op": "==", "value": "已签收"},
+      {"field": "days_since_signed", "op": "<=", "value": 7},
+      {"field": "order.is_free_shipping", "op": "==", "value": 1},
+      {"field": "return_reason", "op": "in", "value": ["不喜欢", "尺寸不符", "效果不好", "无理由"]}
+    ]
+  },
+  "decision": "buyer_pays_return_fee",
+  "action": "买家承担退回运费",
+  "kb_reference": "KB-DIS-019",
+  "reply_template": "您的订单是包邮商品，七天无理由退货时，您只需承担退回的运费。"
+},
+  {
+  "rule_id": "R-RET-008",
+  "intent": "calc_return_shipping",
+  "priority": 80,
+  "conditions": {
+    "all": [
+      {"field": "order.status", "op": "==", "value": "已签收"},
+      {"field": "days_since_signed", "op": "<=", "value": 7},
+      {"field": "order.is_free_shipping", "op": "==", "value": 0},
+      {"field": "return_reason", "op": "in", "value": ["不喜欢", "尺寸不符", "效果不好", "无理由"]}
+    ]
+  },
+  "decision": "buyer_pays_all_fee",
+  "action": "买家承担所有运费",
+  "kb_reference": "KB-DIS-019",
+  "reply_template": "您的订单为非包邮商品，七天无理由退货时，发货和退回运费均由您承担。"
+},
+  {
+    "rule_id": "R-RET-009",
+    "intent": "calc_return_shipping",
+    "priority": 90,
+    "conditions": {
+      "all": [
+        {"field": "return_reason", "op": "in", "value": ["质量问题", "破损", "与描述不符", "假冒品牌", "发错货"]}
+      ]
+    },
+    "decision": "seller_pays_all_fee",
+    "action": "卖家承担所有运费",
+    "kb_reference": "KB-DIS-005",
+    "reply_template": "亲，由于是卖家责任（质量问题/发错货等），退货产生的所有运费由卖家承担。"
+  },
+  {
+    "rule_id": "R-RET-010",
+    "intent": "escalate_to_human",
+    "priority": 999,
+    "conditions": {
+      "any": [
+        {"field": "user_intent", "op": "in", "value": ["投诉", "曝光", "起诉", "告你们", "12315", "维权", "赔偿"]},
+        {"field": "user_emotion", "op": "==", "value": "high_risk"}
+      ]
+    },
+    "decision": "escalate",
+    "action": "强制转人工",
+    "kb_reference": null,
+    "reply_template": "非常抱歉给您带来不好的体验，正在为您转接人工客服，稍后会有专人为您跟进。"
+  },
+  {
+  "rule_id": "R-RET-011",
+  "intent": "check_return_eligibility",
+  "priority": 95,
+  "conditions": {
+    "any": [
+      {"field": "order.status", "op": "==", "value": "已发货"},
+      {"field": "order.status", "op": "==", "value": "运输中"},
+      {"field": "order.status", "op": "==", "value": "派送中"}
+    ]
+  },
+  "decision": "suggest_reject_or_wait",
+  "action": "建议拒收或签收后走退货",
+  "kb_reference": "KB-SHIP-007",
+  "reply_template": "您的订单已发货但尚未签收。如果您不想要了，建议直接联系快递员拒收，或等签收后再走退货流程。"
+},
+  {
+  "rule_id": "R-RET-012",
+  "intent": "check_return_eligibility",
+  "priority": 115,
+  "conditions": {
+    "all": [
+      {"field": "order.status", "op": "==", "value": "未发货"},
+      {"field": "product.category", "op": "in", "value": ["定制", "生鲜", "内衣", "贴身用品", "二手", "数字化商品", "报刊", "服务", "人体用药"]}
+    ]
+  },
+  "decision": "cancel_special_unshipped",
+  "action": "特殊类目未发货，可取消退款",
+  "kb_reference": "KB-RET-004",
+  "reply_template": "亲，您的订单尚未发货。虽然定制/贴身用品等特殊类目不支持七天无理由退货，但在未发货阶段，您可以申请取消订单并全额退款。"
+}
+]
